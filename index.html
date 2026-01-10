@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Study Resource Management</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#2e3f5e;
+      --muted:#8ea0c0;
+      --text:#000000;
+      --accent:#4dd6a6;
+      --danger:#ff5d6c;
+      --line:rgba(255,255,255,.08);
+      --chip:rgba(77,214,166,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(77,214,166,.18), transparent 60%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(120,140,255,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:24px 18px;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    h1{margin:0 0 6px 0; font-size:22px;}
+    p{margin:0; color:var(--muted); font-size:14px;}
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 18px 28px 18px;
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .container{grid-template-columns:1fr}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 40%), var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      box-shadow: 0 14px 45px rgba(0,0,0,.35);
+    }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:15px;
+      color:#f3f6ff;
+      letter-spacing:.2px;
+    }
+    .row{display:flex; gap:10px}
+    .row > *{flex:1}
+    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
+    input, select, textarea{
+      width:100%;
+      background: rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:10px 10px;
+      border-radius:10px;
+      outline:none;
+    }
+    textarea{min-height:74px; resize:vertical}
+    input::placeholder, textarea::placeholder{color:rgba(234,240,255,.45)}
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      transition:.15s transform, .15s opacity, .15s background;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+    .btn:active{transform: translateY(0px); opacity:.9}
+    .btn.primary{
+      border-color: rgba(77,214,166,.35);
+      background: rgba(77,214,166,.14);
+    }
+    .btn.danger{
+      border-color: rgba(255,93,108,.35);
+      background: rgba(255,93,108,.12);
+    }
+    .muted{color:var(--muted); font-size:12px}
+    .divider{height:1px; background:var(--line); margin:12px 0}
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:flex-end;
+    }
+    .toolbar .group{flex:1; min-width:200px}
+    .toolbar .actions{display:flex; gap:10px}
+    .list{display:flex; flex-direction:column; gap:10px; margin-top:12px}
+    .item{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      border-radius:14px;
+      padding:12px;
+    }
+    .item .top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .title{
+      font-weight:700;
+      font-size:14px;
+      line-height:1.25;
+      margin:0 0 6px 0;
+    }
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+    .chip{
+      font-size:11px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid rgba(77,214,166,.25);
+      background: var(--chip);
+      color: #bdf8e4;
+    }
+    .item .buttons{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    a{color:#b7c6ff}
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:8px;
+      line-height:1.35;
+    }
+    .small{font-size:11px}
+    .badge{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+    }
+    .kpi{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .kpi .box{
+      flex:1;
+      min-width:120px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      border-radius:12px;
+      padding:10px;
+    }
+    .kpi .num{font-weight:800; font-size:18px}
+    .kpi .lbl{font-size:12px; color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Digital Study Resource Management</h1>
+    <p>Ders ve kaynaklarını tek yerde yönet: ekle, etiketle, ara, filtrele. (LocalStorage ile kalıcı)</p>
+  </header>
+
+  <main class="container">
+    <!-- LEFT -->
+    <section class="card">
+      <h2>📚 Ders Yönetimi</h2>
+
+      <label>Ders adı</label>
+      <input id="courseName" placeholder="Örn: MIS 207, Marketing, C++" />
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="addCourseBtn">Ders Ekle</button>
+        <button class="btn" id="seedBtn" title="Demo veriler ekler">Demo</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2>➕ Kaynak Ekle / Düzenle</h2>
+      <input type="hidden" id="editingId" />
+
+      <label>Ders</label>
+      <select id="resourceCourse"></select>
+
+      <label>Başlık</label>
+      <input id="resourceTitle" placeholder="Örn: Chapter 5 PDF, Lecture Notes, YouTube Playlist" />
+
+      <div class="row">
+        <div>
+          <label>Tür</label>
+          <select id="resourceType">
+            <option value="link">Link</option>
+            <option value="file">Dosya</option>
+            <option value="note">Not</option>
+          </select>
+        </div>
+        <div>
+          <label>Öncelik</label>
+          <select id="resourcePriority">
+            <option value="low">Low</option>
+            <option value="med" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="linkBox">
+        <label>URL</label>
+        <input id="resourceUrl" placeholder="https://..." />
+      </div>
+
+      <div id="fileBox" style="display:none">
+        <label>Dosya</label>
+        <input id="resourceFile" type="file" />
+        <div class="hint small">Not: Dosya tarayıcıya base64 olarak kaydedilir. Büyük dosyalar için uygun değil.</div>
+      </div>
+
+      <div id="noteBox" style="display:none">
+        <label>Not</label>
+        <textarea id="resourceNote" placeholder="Kısa notlar..."></textarea>
+      </div>
+
+      <label>Etiketler (virgülle)</label>
+      <input id="resourceTags" placeholder="örn: final, özet, pdf, chapter5" />
+
+      <label>Açıklama (opsiyonel)</label>
+      <textarea id="resourceDesc" placeholder="Bu kaynak ne işe yarar?"></textarea>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="saveResourceBtn">Kaydet</button>
+        <button class="btn" id="resetFormBtn">Formu Sıfırla</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <h2>📊 Özet</h2>
+      <div class="kpi">
+        <div class="box">
+          <div class="num" id="kpiCourses">0</div>
+          <div class="lbl">Ders</div>
+        </div>
+        <div class="box">
+          <div class="num" id="kpiResources">0</div>
+          <div class="lbl">Kaynak</div>
+        </div>
+        <div class="box">
+          <div class="num" id="kpiHigh">0</div>
+          <div class="lbl">High Priority</div>
+        </div>
+      </div>
+
+      <div class="hint">
+        İpucu: Sağ tarafta arama kutusu ile başlık/etiket/açıklama içinde aratabilirsin.
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card">
+      <h2>🔎 Kaynaklar</h2>
+
+      <div class="toolbar">
+        <div class="group">
+          <label>Ara</label>
+          <input id="q" placeholder="başlık / etiket / açıklama..." />
+        </div>
+        <div class="group">
+          <label>Ders filtresi</label>
+          <select id="filterCourse"></select>
+        </div>
+        <div class="group">
+          <label>Tür filtresi</label>
+          <select id="filterType">
+            <option value="all">Tümü</option>
+            <option value="link">Link</option>
+            <option value="file">Dosya</option>
+            <option value="note">Not</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="btn" id="clearFiltersBtn">Temizle</button>
+          <button class="btn danger" id="wipeBtn" title="Tüm veriyi siler">Hepsini Sil</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="emptyState" class="muted">Henüz kaynak yok. Soldan ekleyebilirsin.</div>
+      <div id="resourceList" class="list"></div>
+    </section>
+  </main>
+
+  <script>
+    // ---------- Storage ----------
+    const LS_KEY = "study_resource_manager_v1";
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return { courses: [], resources: [] };
+        const parsed = JSON.parse(raw);
+        parsed.courses ??= [];
+        parsed.resources ??= [];
+        return parsed;
+      }catch(e){
+        return { courses: [], resources: [] };
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      renderAll();
+    }
+
+    let state = loadState();
+
+    // ---------- Utils ----------
+    const uid = () => (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+    const nowISO = () => new Date().toISOString();
+    const toTags = (s) =>
+      (s || "")
+        .split(",")
+        .map(t => t.trim())
+        .filter(Boolean)
+        .slice(0, 12);
+
+    function escapeHtml(str){
+      return (str ?? "").replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    function prettyDate(iso){
+      try{
+        const d = new Date(iso);
+        return d.toLocaleString("tr-TR", { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+      }catch(e){ return iso; }
+    }
+
+    // ---------- DOM ----------
+    const courseName = document.getElementById("courseName");
+    const addCourseBtn = document.getElementById("addCourseBtn");
+    const seedBtn = document.getElementById("seedBtn");
+
+    const resourceCourse = document.getElementById("resourceCourse");
+    const resourceTitle = document.getElementById("resourceTitle");
+    const resourceType = document.getElementById("resourceType");
+    const resourcePriority = document.getElementById("resourcePriority");
+    const resourceUrl = document.getElementById("resourceUrl");
+    const resourceFile = document.getElementById("resourceFile");
+    const resourceNote = document.getElementById("resourceNote");
+    const resourceTags = document.getElementById("resourceTags");
+    const resourceDesc = document.getElementById("resourceDesc");
+    const editingId = document.getElementById("editingId");
+    const saveResourceBtn = document.getElementById("saveResourceBtn");
+    const resetFormBtn = document.getElementById("resetFormBtn");
+
+    const linkBox = document.getElementById("linkBox");
+    const fileBox = document.getElementById("fileBox");
+    const noteBox = document.getElementById("noteBox");
+
+    const q = document.getElementById("q");
+    const filterCourse = document.getElementById("filterCourse");
+    const filterType = document.getElementById("filterType");
+    const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+    const wipeBtn = document.getElementById("wipeBtn");
+
+    const resourceList = document.getElementById("resourceList");
+    const emptyState = document.getElementById("emptyState");
+
+    const kpiCourses = document.getElementById("kpiCourses");
+    const kpiResources = document.getElementById("kpiResources");
+    const kpiHigh = document.getElementById("kpiHigh");
+
+    // ---------- Courses ----------
+    function addCourse(name){
+      const n = (name || "").trim();
+      if(!n) return alert("Ders adı boş olamaz.");
+      if(state.courses.some(c => c.name.toLowerCase() === n.toLowerCase())){
+        return alert("Bu ders zaten var.");
+      }
+      state.courses.push({ id: uid(), name: n, createdAt: nowISO() });
+      // default select
+      saveState();
+      courseName.value = "";
+    }
+
+    function removeCourse(courseId){
+      const course = state.courses.find(c => c.id === courseId);
+      if(!course) return;
+      const usedCount = state.resources.filter(r => r.courseId === courseId).length;
+      if(usedCount > 0){
+        const ok = confirm(`"${course.name}" dersine bağlı ${usedCount} kaynak var. Ders silinirse kaynaklar da silinecek. Devam?`);
+        if(!ok) return;
+        state.resources = state.resources.filter(r => r.courseId !== courseId);
+      }
+      state.courses = state.courses.filter(c => c.id !== courseId);
+      saveState();
+    }
+
+    // ---------- Resources ----------
+    async function fileToBase64(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function upsertResource(){
+      if(state.courses.length === 0){
+        return alert("Önce en az 1 ders eklemelisin.");
+      }
+
+      const courseId = resourceCourse.value;
+      const title = resourceTitle.value.trim();
+      const type = resourceType.value;
+      const priority = resourcePriority.value;
+      const tags = toTags(resourceTags.value);
+      const desc = resourceDesc.value.trim();
+
+      if(!courseId) return alert("Ders seçmelisin.");
+      if(!title) return alert("Başlık gerekli.");
+
+      let payload = { url: "", fileName: "", fileData: "", note: "" };
+
+      if(type === "link"){
+        const url = resourceUrl.value.trim();
+        if(!url) return alert("Link türünde URL gerekli.");
+        payload.url = url;
+      }else if(type === "file"){
+        const f = resourceFile.files?.[0];
+        if(!editingId.value && !f){
+          return alert("Dosya türünde dosya seçmelisin.");
+        }
+        if(f){
+          // (çok büyük dosyaları engelle)
+          const maxMB = 4;
+          if(f.size > maxMB * 1024 * 1024){
+            return alert(`Dosya çok büyük (${(f.size/1024/1024).toFixed(1)}MB). Max ${maxMB}MB önerilir.`);
+          }
+          payload.fileName = f.name;
+          payload.fileData = await fileToBase64(f);
+        }
+      }else if(type === "note"){
+        const note = resourceNote.value.trim();
+        if(!note) return alert("Not türünde içerik gerekli.");
+        payload.note = note;
+      }
+
+      const id = editingId.value;
+
+      if(id){
+        const idx = state.resources.findIndex(r => r.id === id);
+        if(idx === -1) return;
+
+        const prev = state.resources[idx];
+        state.resources[idx] = {
+          ...prev,
+          courseId, title, type, priority, tags, desc,
+          // file düzenlemede yeni dosya seçilmediyse eskisini koru:
+          url: type === "link" ? payload.url : "",
+          note: type === "note" ? payload.note : "",
+          fileName: (type === "file" ? (payload.fileName || prev.fileName) : ""),
+          fileData: (type === "file" ? (payload.fileData || prev.fileData) : ""),
+          updatedAt: nowISO()
+        };
+      }else{
+        state.resources.push({
+          id: uid(),
+          courseId,
+          title,
+          type,
+          priority,
+          tags,
+          desc,
+          url: payload.url,
+          note: payload.note,
+          fileName: payload.fileName,
+          fileData: payload.fileData,
+          createdAt: nowISO(),
+          updatedAt: nowISO()
+        });
+      }
+
+      resetForm();
+      saveState();
+    }
+
+    function editResource(id){
+      const r = state.resources.find(x => x.id === id);
+      if(!r) return;
+
+      editingId.value = r.id;
+      resourceCourse.value = r.courseId;
+      resourceTitle.value = r.title;
+      resourceType.value = r.type;
+      resourcePriority.value = r.priority;
+      resourceTags.value = (r.tags || []).join(", ");
+      resourceDesc.value = r.desc || "";
+
+      // switch ui
+      syncTypeBoxes();
+
+      if(r.type === "link"){
+        resourceUrl.value = r.url || "";
+      }else if(r.type === "note"){
+        resourceNote.value = r.note || "";
+      }else if(r.type === "file"){
+        // file input güvenlik gereği programatik set edilemez
+        // ama kullanıcıya mevcut dosya adını göstermek için desc'e ek bir bilgi yazabiliriz:
+        if(r.fileName){
+          resourceDesc.value = (resourceDesc.value ? resourceDesc.value + "\n\n" : "") + `Mevcut dosya: ${r.fileName}`;
+        }
+      }
+
+      saveResourceBtn.textContent = "Güncelle";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteResource(id){
+      const r = state.resources.find(x => x.id === id);
+      if(!r) return;
+      const ok = confirm(`"${r.title}" kaynağı silinsin mi?`);
+      if(!ok) return;
+      state.resources = state.resources.filter(x => x.id !== id);
+      saveState();
+    }
+
+    function resetForm(){
+      editingId.value = "";
+      resourceTitle.value = "";
+      resourceUrl.value = "";
+      resourceNote.value = "";
+      resourceTags.value = "";
+      resourceDesc.value = "";
+      resourceFile.value = "";
+      resourceType.value = "link";
+      resourcePriority.value = "med";
+      syncTypeBoxes();
+      saveResourceBtn.textContent = "Kaydet";
+      if(state.courses[0]) resourceCourse.value = state.courses[0].id;
+    }
+
+    // ---------- Filters / Search ----------
+    function getFilteredResources(){
+      const term = q.value.trim().toLowerCase();
+      const cFilter = filterCourse.value;
+      const tFilter = filterType.value;
+
+      return state.resources
+        .filter(r => (cFilter === "all" ? true : r.courseId === cFilter))
+        .filter(r => (tFilter === "all" ? true : r.type === tFilter))
+        .filter(r => {
+          if(!term) return true;
+          const hay = [
+            r.title, r.desc, r.url, r.note,
+            ...(r.tags || []),
+            courseNameById(r.courseId)
+          ].join(" ").toLowerCase();
+          return hay.includes(term);
+        })
+        .sort((a,b) => {
+          // priority: high>med>low then updatedAt desc
+          const p = {high:3, med:2, low:1};
+          const d = (p[b.priority] - p[a.priority]);
+          if(d !== 0) return d;
+          return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+    }
+
+    function courseNameById(id){
+      return state.courses.find(c => c.id === id)?.name || "—";
+    }
+
+    // ---------- Render ----------
+    function renderCourseSelects(){
+      // left: resourceCourse
+      resourceCourse.innerHTML = "";
+      state.courses.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        resourceCourse.appendChild(opt);
+      });
+
+      // right: filterCourse
+      filterCourse.innerHTML = "";
+      const all = document.createElement("option");
+      all.value = "all";
+      all.textContent = "Tümü";
+      filterCourse.appendChild(all);
+
+      state.courses.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        filterCourse.appendChild(opt);
+      });
+
+      // set defaults safely
+      if(state.courses[0] && !resourceCourse.value){
+        resourceCourse.value = state.courses[0].id;
+      }
+      if(!filterCourse.value) filterCourse.value = "all";
+    }
+
+    function typeBadge(type){
+      if(type === "link") return "🔗 Link";
+      if(type === "file") return "📎 Dosya";
+      return "🗒️ Not";
+    }
+
+    function priorityBadge(p){
+      if(p === "high") return "🔥 High";
+      if(p === "med") return "⭐ Medium";
+      return "🌿 Low";
+    }
+
+    function renderResources(){
+      const items = getFilteredResources();
+      resourceList.innerHTML = "";
+
+      emptyState.style.display = items.length ? "none" : "block";
+
+      items.forEach(r => {
+        const course = courseNameById(r.courseId);
+
+        let mainLinkHtml = "";
+        if(r.type === "link"){
+          mainLinkHtml = `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Aç</a>`;
+        }else if(r.type === "file"){
+          if(r.fileData){
+            mainLinkHtml = `<a href="${escapeHtml(r.fileData)}" download="${escapeHtml(r.fileName || "dosya")}">İndir</a>`;
+          }else{
+            mainLinkHtml = `<span class="muted">Dosya yok</span>`;
+          }
+        }else if(r.type === "note"){
+          mainLinkHtml = `<span class="muted">Not</span>`;
+        }
+
+        const tags = (r.tags || []).map(t => `<span class="chip">#${escapeHtml(t)}</span>`).join("");
+
+        const notePreview = r.type === "note"
+          ? `<div class="hint" style="white-space:pre-wrap; margin-top:8px;">${escapeHtml(r.note).slice(0, 320)}${r.note.length>320 ? "…" : ""}</div>`
+          : "";
+
+        const descHtml = r.desc ? `<div class="hint" style="white-space:pre-wrap;">${escapeHtml(r.desc)}</div>` : "";
+
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div class="top">
+            <div>
+              <div class="title">${escapeHtml(r.title)}</div>
+              <div class="meta">
+                <span class="badge">${escapeHtml(course)}</span>
+                <span class="badge">${typeBadge(r.type)}</span>
+                <span class="badge">${priorityBadge(r.priority)}</span>
+                <span class="badge">⏱ ${escapeHtml(prettyDate(r.updatedAt))}</span>
+                <span>${mainLinkHtml}</span>
+              </div>
+              ${descHtml}
+              ${notePreview}
+              <div class="chips">${tags || ""}</div>
+            </div>
+            <div class="buttons">
+              <button class="btn" data-action="edit" data-id="${r.id}">Düzenle</button>
+              <button class="btn danger" data-action="delete" data-id="${r.id}">Sil</button>
+            </div>
+          </div>
+        `;
+        resourceList.appendChild(el);
+      });
+    }
+
+    function renderKPIs(){
+      kpiCourses.textContent = String(state.courses.length);
+      kpiResources.textContent = String(state.resources.length);
+      kpiHigh.textContent = String(state.resources.filter(r => r.priority === "high").length);
+    }
+
+    function renderAll(){
+      renderCourseSelects();
+      renderResources();
+      renderKPIs();
+    }
+
+    // ---------- UI helpers ----------
+    function syncTypeBoxes(){
+      const t = resourceType.value;
+      linkBox.style.display = (t === "link") ? "block" : "none";
+      fileBox.style.display = (t === "file") ? "block" : "none";
+      noteBox.style.display = (t === "note") ? "block" : "none";
+    }
+
+    // ---------- Events ----------
+    addCourseBtn.addEventListener("click", () => addCourse(courseName.value));
+    courseName.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") addCourse(courseName.value);
+    });
+
+    resourceType.addEventListener("change", syncTypeBoxes);
+    saveResourceBtn.addEventListener("click", upsertResource);
+    resetFormBtn.addEventListener("click", resetForm);
+
+    q.addEventListener("input", renderResources);
+    filterCourse.addEventListener("change", renderResources);
+    filterType.addEventListener("change", renderResources);
+
+    clearFiltersBtn.addEventListener("click", () => {
+      q.value = "";
+      filterCourse.value = "all";
+      filterType.value = "all";
+      renderResources();
+    });
+
+    wipeBtn.addEventListener("click", () => {
+      const ok = confirm("Tüm dersler ve kaynaklar silinecek. Emin misin?");
+      if(!ok) return;
+      state = { courses: [], resources: [] };
+      saveState();
+      resetForm();
+    });
+
+    resourceList.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if(!btn) return;
+      const id = btn.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      if(action === "edit") editResource(id);
+      if(action === "delete") deleteResource(id);
+    });
+
+    seedBtn.addEventListener("click", () => {
+      if(state.courses.length || state.resources.length){
+        const ok = confirm("Demo eklenmeden önce mevcut veriler kalacak. Devam?");
+        if(!ok) return;
+      }
+      const c1 = { id: uid(), name: "MIS 207", createdAt: nowISO() };
+      const c2 = { id: uid(), name: "Marketing", createdAt: nowISO() };
+      const c3 = { id: uid(), name: "C++", createdAt: nowISO() };
+      state.courses.push(c1,c2,c3);
+
+      state.resources.push(
+        {
+          id: uid(),
+          courseId: c1.id,
+          title: "Linked List - Özet Not",
+          type: "note",
+          priority: "high",
+          tags: ["final","data-structures","linkedlist"],
+          desc: "Final için hızlı tekrar notu.",
+          note: "Tek bağlı liste: her node (data, next) tutar.\nHead başlangıcı gösterir.\nInsert/delete O(1) olabilir (pointer biliniyorsa).\nTraversal O(n).",
+          url:"",
+          fileName:"",
+          fileData:"",
+          createdAt: nowISO(),
+          updatedAt: nowISO()
+        },
+        {
+          id: uid(),
+          courseId: c2.id,
+          title: "Value-based Pricing (Özet)",
+          type: "link",
+          priority: "med",
+          tags: ["pricing","exam"],
+          desc: "Örnek kaynak linki (değiştir).",
+          url: "https://example.com",
+          note:"",
+          fileName:"",
+          fileData:"",
+          createdAt: nowISO(),
+          updatedAt: nowISO()
+        }
+      );
+
+      saveState();
+      resetForm();
+    });
+
+    // ---------- First run ----------
+    syncTypeBoxes();
+    renderAll();
+    if(state.courses.length === 0){
+      // minimal başlangıç dersi
+      state.courses.push({ id: uid(), name: "Genel", createdAt: nowISO() });
+      saveState();
+      resetForm();
+    }else{
+      resetForm();
+      renderAll();
+    }
+  </script>
+</body>
+</html>
